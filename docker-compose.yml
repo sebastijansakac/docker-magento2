@@ -3,7 +3,7 @@ services:
   web:
     image: alexcheng/magento2
     ports:
-      - "9005:80"
+      - "9007:80"
     links:
       - db
     volumes: 
@@ -19,7 +19,7 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "9006:80"
+      - "9008:80"
     links:
       - db     
 volumes:
