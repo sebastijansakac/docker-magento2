@@ -1,28 +1,53 @@
 version: '3.0'
 services:
-  web:
-    build: ./developer
-    ports:
-      - "80:80"
-    links:
-      - db
-    volumes: 
-      - magento-data:/var/www/html  
-    env_file:
-      - env
-  db:
-    image: mysql:5.6.23
-    volumes:
-      - db-data:/var/lib/mysql/data
-    env_file:
-      - env
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    ports:
-      - "8580:80"
-    links:
-      - db     
+    web:
+        build: ./developer
+        ports:
+            - "9000:80"
+        links:
+            - db
+        volumes:
+            - magento-data:/var/www/html
+        env_file:
+            - env
+        networks:
+            - magento_network
+
+    db:
+        image: mysql:latest
+        volumes:
+            - db-data:/var/lib/mysql
+        env_file:
+            - env
+        networks:
+            - magento_network
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        ports:
+            - "8580:80"
+        links:
+            - db
+
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+        container_name: elasticsearch
+        networks:
+            - magento_network
+        environment:
+            - xpack.security.enabled=false
+            - discovery.type=single-node
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./elasticsearch_data:/usr/share/elasticsearch/data
+        restart: on-failure
+
 volumes:
-  magento-data:
-  db-data: 
+    magento-data:
+    db-data:
+
+networks:
+    magento_network:

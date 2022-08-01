@@ -1,11 +1,11 @@
-FROM quay.io/alexcheng1982/apache2-php7:7.3.12
+FROM php:8.1-apache
 
-LABEL maintainer="alexcheng1982@gmail.com"
-LABEL php_version="7.3.12"
-LABEL magento_version="2.3.6"
-LABEL description="Magento 2.3.6 with PHP 7.3.12"
+LABEL maintainer="sebastijan.sakac@icloud.com"
+LABEL php_version="8.1"
+LABEL magento_version="2.4.4"
+LABEL description="Magento 2.4.4 with PHP 8.1"
 
-ENV MAGENTO_VERSION 2.3.6
+ENV MAGENTO_VERSION 2.4.4
 ENV INSTALL_DIR /var/www/html
 ENV COMPOSER_HOME /var/www/.composer/
 
@@ -13,21 +13,46 @@ RUN curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer
 COPY ./auth.json $COMPOSER_HOME
 
-RUN requirements="libpng++-dev libzip-dev libmcrypt-dev libmcrypt4 libcurl3-dev libfreetype6 libjpeg-turbo8 libjpeg-turbo8-dev libfreetype6-dev libicu-dev libxslt1-dev unzip" \
-    && apt-get update \
-    && apt-get install -y $requirements \
-    && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install pdo_mysql \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install gd \
-    && docker-php-ext-install mbstring \
-    && docker-php-ext-install zip \
-    && docker-php-ext-install intl \
-    && docker-php-ext-install xsl \
-    && docker-php-ext-install soap \
-    && docker-php-ext-install bcmath
+RUN apt-get update && apt-get install -y  \
+    libmcrypt-dev \
+    default-mysql-client \
+    openssl \
+    libpq-dev \
+    libzip4 \
+    zip \
+    p7zip-full \
+    unzip \
+    vim \
+    autoconf \
+    build-essential \
+    apt-utils \
+    zlib1g-dev \
+    libzip-dev \
+    libmagick++-dev \
+    libmagickwand-dev \
+    libpq-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    wget \
+    libzip-dev \
+    zip \
+    cron \
+    libxslt-dev
 
-RUN yes '' | pecl install mcrypt-1.0.3 \
+RUN docker-php-ext-install gd \
+    && docker-php-ext-install intl \
+    && docker-php-ext-configure gd --with-jpeg=/usr/include/ --with-freetype=/usr/include/ --with-freetype --enable-gd \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install mysqli pdo pdo_mysql \
+    && docker-php-ext-install soap \
+    && docker-php-ext-install xsl \
+    && docker-php-ext-install sockets \
+    && docker-php-ext-install bcmath \
+    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
+    && docker-php-ext-install bcmath gd
+
+RUN yes '' | pecl install mcrypt-1.0.5 \
     && echo 'extension=mcrypt.so' > /usr/local/etc/php/conf.d/mcrypt.ini
 
 RUN chsh -s /bin/bash www-data
